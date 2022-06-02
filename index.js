@@ -1,20 +1,36 @@
-import express from 'express'
-import mongoose from 'mongoose'
+import express from "express";
+import mongoose from "mongoose";
 import cors from 'cors'
-import dotenv from 'dotenv'
+import dotenv from "dotenv";
 
-//Import routes
-import AuthRoutes from './routes/AuthRoutes.js'
-const app = express()
+import AuthRoute from './routes/AuthRoutes.js'
+import UserRoute from './routes/UserRoute.js'
+import PostRoute from './routes/PostRoute.js'
+
+
+
+const app = express();
 
 app.use(express.json())
 app.use(cors())
-//Routes
-app.use('/auth',AuthRoutes)
 
-dotenv.config()
-const PORT = process.env.PORT
-mongoose.connect(process.env.DATABASE_URI)
-    .then(()=> console.log('Database connected'))
-    .then(()=> app.listen(PORT,()=> console.log(`server running on port: ${PORT}`)))
-    .catch(err => console.log(err))
+dotenv.config();
+
+  // usage of routes
+  app.use('/auth', AuthRoute)
+  app.use('/user', UserRoute)
+  app.use('/post', PostRoute)
+
+mongoose
+  .connect(process.env.MONGO_DB, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() =>
+    app.listen(process.env.PORT, () =>
+      console.log(`Listening at ${process.env.PORT}`)
+    )
+  )
+  .catch((error) => console.log(error));
+
+

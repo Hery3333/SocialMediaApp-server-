@@ -1,11 +1,19 @@
 import UserModel from "../models/userModel.js";
+import bcrypt from 'bcrypt'
 
 //Registering a new User
 export const registerUser = async(req,res,next) => {
     const {username,password,firstname,lastname} = req.body;
     
+    //Encode password
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(password, salt)
+
     const newUser = new UserModel({
-        username,password,firstname,lastname
+        username,
+        password: hashedPassword,
+        firstname,
+        lastname
     })
 
     try {
@@ -16,3 +24,21 @@ export const registerUser = async(req,res,next) => {
     }
 }
 
+
+//Login User
+
+export const loginUser = async (req,res,next) => {
+    const {username,password} = req.body;
+
+    try {
+        const user = await UserModel.findOne({username})
+        if(user){
+            const validity = await bcrypt.compare(password, user.password)
+            validity ? res.status(200).json(user) : res.status(400).json("Wrong Password")
+        }else{
+            res.status(404).json("User doesn't exist")
+        }
+    } catch (error) {
+        res.status(500).json({message: error.message})
+    }
+}
